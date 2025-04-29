@@ -59,7 +59,9 @@ join
 group by 
 	1, 2, TO_CHAR(sale_date, 'ID')
 order by 
-	 TO_CHAR(sale_date, 'ID');
+	TO_CHAR(sale_date, 'ID'),
+	income DESC,
+	seller;
 
 /*Во втором отчете предоставлены данные по количеству уникальных покупателей и выручке, которую они принесли.
 date - дата в указанном формате
@@ -83,16 +85,7 @@ order by age_category;
 customer - имя и фамилия покупателя
 sale_date - дата покупки
 seller - имя и фамилия продавца */
-with first_purchase as (
-    select 
-        s.customer_id,
-        MIN(s.sale_date) as first_sale_date
-    from
-        sales s
-    group by 
-        s.customer_id
-)
-select distinct
+select distinct on (c.customer_id)
     concat(c.first_name, ' ', c.last_name) as customer,
     s.sale_date as sale_date,
     concat(e.first_name, ' ', e.last_name) as seller
@@ -104,9 +97,8 @@ join
     products p on p.product_id = s.product_id
 join
     customers c on c.customer_id = s.customer_id
-join
-    first_purchase fp on fp.customer_id = s.customer_id and fp.first_sale_date = s.sale_date
 where
     p.price = 0
 order by
-    customer;
+    c.customer_id,
+    s.sale_date;  
